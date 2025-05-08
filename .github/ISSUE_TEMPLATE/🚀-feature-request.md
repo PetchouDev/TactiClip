@@ -1,7 +1,7 @@
 ---
 name: "\U0001F680 Feature Request"
 about: Propose a new feature or enhancement for TactiClip
-title: "[FEATURE REQUEST]"
+title: "[FEATURE REQUEST] - My Awesome Idea"
 labels: documentation, Feature, QoL
 assignees: ''
 
