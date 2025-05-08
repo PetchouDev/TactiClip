@@ -186,7 +186,7 @@ export default component$(() => {
           <div class="loader-text">
             <div class="loader-text-header">
               <h1>TactiClip</h1>
-              <img src="../../../src-tauri/icons/128x128.png" alt="" />
+              <img src="/icons/icon.png" alt="" />
             </div>
             <p>Loading clipboard history...</p>
           </div>

@@ -269,6 +269,7 @@ body,
   padding-left: var(--clipboard-padding);
 
   margin-left: calc(var(--clipboard-border-width) + 1px);
+  margin-top: 2vh;
 
   background: var(--primary-color);
   background: linear-gradient(
@@ -290,6 +291,7 @@ body,
   padding-top: var(--clipboard-padding);
 
   margin-top: calc(var(--clipboard-border-width) + 1px);
+  margin-left: 2vw;
 
   background: var(--primary-color);
   background: linear-gradient(
@@ -550,7 +552,7 @@ pre {
   width: var(--clipboard-item-size-factor);
   aspect-ratio: var(--aspect-ratio-vertical);
   overflow-y: clip;
-  transition: height 0.45s ease;
+  transition: width 0.45s ease;
 }
 
 .clipboard-history-item:hover {
@@ -895,6 +897,10 @@ pre {
   height: var(--clipboard-item-size-factor);
 }
 
+.clipboard-history-item-vertical.expand-in {
+  width: var(--clipboard-item-size-factor);
+}
+
 .clipboard-history-item-horizontal.shrink-out {
   height: 0;
   border: none;
@@ -902,20 +908,13 @@ pre {
   transition: all 0.45s ease;
 }
 
-/* .clipboard-history-item-horizontal.shrink-out {
-  opacity: 0;
-  padding: 0;
-  border: 0;
+.clipboard-history-item-vertical.shrink-out {
+  width: 0;
+  border: none;
 
-  height: 0;
-  margin: 0;
+  transition: all 0.45s ease;
+}
 
-  color: transparent;
-
-  transition:
-    all 0.45s,
-    color 0.3s !important;
-}  */
 
 @plugin 'flowbite/plugin';
 

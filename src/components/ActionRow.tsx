@@ -10,11 +10,15 @@ export interface ActionRowProps {
 export const ActionRow = component$<ActionRowProps>(({ layout }) => {
     return (
         <div class={`action-row action-row-${layout}`}>
-            <button class="action-row-button" onClick$={async (e) => {
-                e.stopPropagation();
+            <button 
+                class="action-row-button" 
+                title="Unpin all items"
+                onClick$={async (e) => {
+                    e.stopPropagation();
 
-                await invoke("delete_all", {});
-            }}>
+                    await invoke("delete_all", {});
+                }}
+            >
                 <IconHover regular="trash-can" solid="trash-can" class="trash-button" />
             </button>
             <button class="action-row-button" onClick$={

@@ -23,6 +23,8 @@ use tauri::{
     Manager,
 };
 
+use tauri_plugin_opener::OpenerExt;
+
 use commands::{
     clipboard_api::{get_clipboard_entries_ids, get_clipboard_entry, push_to_clipboard},
     delete_item::{delete_all, delete_item},
@@ -36,7 +38,7 @@ use commands::{
     toggle_window::{slide_window, toggle_window},
 };
 use core::{
-    app_handle::{app_handle, APP_HANDLE},
+    app_handle::{app_handle as get_app_handle, APP_HANDLE},
     database_api::{init_db, DATABASE_CONNECTION},
     tasks::{clipboard_watcher::watch_clipboard, hotkeys_listener::spawn_hotkey_listener},
 };
@@ -63,17 +65,22 @@ fn main() {
 
     // Initialize the Tauri application with the specified configuration
     let _application = tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
         .plugin(tauri_plugin_clipboard::init())
         .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            let app_handle = app.handle();
             // Create a system tray icon and menu
-            let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-            let prefs = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
-            let tray_menu = Menu::with_items(app, &[&prefs, &quit])?;
+            let quit = MenuItem::with_id(app, "quit", "🚪 Quit", true, None::<&str>)?;
+            let prefs = MenuItem::with_id(app, "settings", "🔧 Settings", true, None::<&str>)?;
+            let feature = MenuItem::with_id(app, "feature", "🚀 Request a feature", true, None::<&str>)?;
+            let bug = MenuItem::with_id(app, "bug", "🐞 Report a bug", true, None::<&str>)?;
+            let tray_menu = Menu::with_items(app, &[&prefs, &feature, &bug, &quit])?;
             let _tray = TrayIconBuilder::new()
                 .title("TactiClip")
                 .tooltip("TactiClip")
@@ -96,20 +103,29 @@ fn main() {
                         });
                         println!("Preferences clicked!");
                     }
+                    "bug" => {
+                        let url = "https://github.com/PetchouDev/TactiClip/issues/new?template=%F0%9F%90%9E-bug-report.md";
+                        let _ = parent_app.opener().open_url(url, None::<&str>);
+                    }
+                    "feature" => {
+                        let url = "https://github.com/PetchouDev/TactiClip/issues/new?template=%F0%9F%9A%80-feature-request.md";
+                        let _ = parent_app.opener().open_url(url, None::<&str>);
+                    }
                     _ => {
                         println!("menu item {:?} not handled", event.id);
                     }
                 })
                 .build(app)?;
+            
+            let handle = app_handle.clone();
 
-            let handle = app.handle().clone();
             APP_HANDLE.set(handle.to_owned()).unwrap();
             let db_conn = DATABASE_CONNECTION.get().expect("DB non initialisée");
 
             // Spwawn the window after 500 ms to hide the webview loading (white screen)
             tauri::async_runtime::spawn(async move {
                 tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-                let app = app_handle();
+                let app = get_app_handle();
                 let window = app.get_webview_window("main").unwrap();
                 window.show().unwrap();
             });

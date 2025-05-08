@@ -68,7 +68,7 @@ export const SettingsPage = component$(() => {
     <div class="p-6 space-y-2">
       <div class="flex flex-row items-center justify-between mb-4">
         <h1 class="text-4xl font-bold">TactiClip Settings</h1>
-        <img src="../../../src-tauri/icons/icon.png" alt="TactiClip Icon" width={60} height={60}/>
+        <img src="/icons/icon.png" alt="TactiClip Icon" width={60} height={60}/>
       </div>
 
       <Tabs variant="underline">
@@ -453,60 +453,78 @@ export const SettingsPage = component$(() => {
 
       <div class="w-full fixed bottom-[10px] left-0 px-4 bg-gradient-to-b from-transparent to-white ">
         <div class="flex justify-between items-center w-full gap-4 bg-transparent">
-          <Button 
-            color="red" 
-            class="w-32 h-10"
-            onClick$={
-              $(async () => {
-                invoke("reset_config")
-              })
-            }
-          >Reset to defaults</Button>
+          <Tooltip style="dark" placement="top">
+            <Button 
+              q:slot="trigger"
+              color="red" 
+              class="w-32 h-10"
+              onClick$={
+                $(async () => {
+                  invoke("reset_config")
+                })
+              }
+            >Reset to defaults</Button>
+            <div q:slot="content" class="text-center">Apply the default settings<br />and reload the window.</div>
+          </Tooltip>
+          
 
           <div class="flex gap-2 bg-transparent">
-            <Button 
-              color="dark" 
-              class="w-32 h-10" 
-              onClick$={
-                $(async () => {
-                  invoke("cancel_config")
-                })
-              }
-            >Cancel</Button>
+            <Tooltip style="dark" placement="top">
+              <Button 
+                q:slot="trigger"
+                color="dark" 
+                class="w-32 h-10" 
+                onClick$={
+                  $(async () => {
+                    invoke("cancel_config")
+                  })
+                }
+              >Cancel</Button>
+              <div q:slot="content" class="text-center">Discard unsaved changes <br />and quit.</div>
+            </Tooltip>
 
-            <Button 
-              color="default" 
-              class="w-32 h-10"
-              onClick$={
-                $(async () => {
-                  invoke("preview_config", { payload: JSON.stringify(config.value) });
-                })
-              }
-            >Preview</Button>
+            <Tooltip style="dark" placement="top">
+              <Button 
+                q:slot="trigger"
+                color="default" 
+                class="w-32 h-10"
+                onClick$={
+                  $(async () => {
+                    invoke("preview_config", { payload: JSON.stringify(config.value) });
+                  })
+                }
+              >Preview</Button>
+              <div q:slot="content" class="text-center">Apply the changes until<br />this window is closed.</div>
+            </Tooltip>
+            
+            <Tooltip style="dark" placement="top">
+              <Button 
+                q:slot="trigger"
+                color="green" 
+                class="w-32 h-10"
+                onClick$={
+                  $(async () => {
+                    // Check if autostart is enabled
+                    if (autoStartRef.value?.checked === autoStartEnabled.value) {
+                      // No change, do nothing
+                    } else if (autoStartRef.value?.checked) {
+                      // Enable autostart
+                      await enable_autostart();
+                      console.log("Autostart enabled");
+                    } else {
+                      // Disable autostart
+                      await disable_autostart();
+                      console.log("Autostart disabled");
+                    }
+                    
 
-            <Button 
-              color="green" 
-              class="w-32 h-10"
-              onClick$={
-                $(async () => {
-                  // Check if autostart is enabled
-                  if (autoStartRef.value?.checked === autoStartEnabled.value) {
-                    // No change, do nothing
-                  } else if (autoStartRef.value?.checked) {
-                    // Enable autostart
-                    await enable_autostart();
-                    console.log("Autostart enabled");
-                  } else {
-                    // Disable autostart
-                    await disable_autostart();
-                    console.log("Autostart disabled");
-                  }
-                  
-
-                  invoke("save_config", { payload: JSON.stringify(config.value) });
-                })
-              }
-            >Save</Button>
+                      invoke("save_config", { payload: JSON.stringify(config.value) });
+                  })
+                }
+              >Save</Button>
+              <div q:slot="content" class="text-center">Apply the changes permanently.<br />Be cautious.</div>
+            </Tooltip>
+            
           </div>
         </div>
       </div>
