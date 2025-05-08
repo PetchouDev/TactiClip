@@ -4,7 +4,7 @@ import { emit } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
 export interface ActionRowProps {
-  layout: string;
+    layout: string;
 }
 
 export const ActionRow = component$<ActionRowProps>(({ layout }) => {
@@ -13,7 +13,7 @@ export const ActionRow = component$<ActionRowProps>(({ layout }) => {
             <button class="action-row-button" onClick$={async (e) => {
                 e.stopPropagation();
 
-                const res = await invoke("delete_all", {});
+                await invoke("delete_all", {});
             }}>
                 <IconHover regular="trash-can" solid="trash-can" class="trash-button" />
             </button>

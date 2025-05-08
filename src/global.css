@@ -55,7 +55,7 @@
   --scrollbar-thumb-color: rgb(99, 99, 99);
   --scrollbar-track-color: rgb(51, 51, 51);
   --scrollbar-border-radius: 10px;
-  --scrollbar-margin: 20rem;
+  --scrollbar-margin: 200px;
 
   --button-border-radius: 5px;
 }
@@ -101,6 +101,7 @@ body,
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
   background-color: var(--loader-background-color);
 
   border-radius: 200px;
@@ -140,6 +141,8 @@ body,
         height: var(--loader-icon-size);
         object-fit: cover;
         object-position: center;
+
+        margin-left: 10px;
       }
     }
 
@@ -186,8 +189,8 @@ body,
 }
 
 .clipboard-history-container {
-  width: 100vw;
-  height: 100vh;
+  width: 99vw;
+  height: 99vh;
 
   display: flex;
   justify-content: flex-start;
@@ -219,10 +222,8 @@ body,
 
   z-index: 200;
 
-  height: 100%;
-
   margin: var(--clipboard-margin);
-  margin-left: 0;
+  margin: 0;
 
   border: none;
   border-radius: var(--clipboard-border-radius);
@@ -267,11 +268,32 @@ body,
   align-items: baseline;
   padding-left: var(--clipboard-padding);
 
-  margin-left: var(--clipboard-border-width);
+  margin-left: calc(var(--clipboard-border-width) + 1px);
 
   background: var(--primary-color);
   background: linear-gradient(
     90deg,
+    var(--primary-color) 0%,
+    var(--primary-color) 50%,
+    rgba(5, 5, 5, 0.6) 75%,
+    transparent 100%
+  );
+}
+
+.action-row-vertical {
+  width: var(--clipboard-item-size-factor);
+
+  aspect-ratio: 5/2;
+
+  flex-direction: row;
+  align-items: baseline;
+  padding-top: var(--clipboard-padding);
+
+  margin-top: calc(var(--clipboard-border-width) + 1px);
+
+  background: var(--primary-color);
+  background: linear-gradient(
+    180deg,
     var(--primary-color) 0%,
     var(--primary-color) 50%,
     rgba(5, 5, 5, 0.6) 75%,
@@ -288,22 +310,42 @@ body,
   z-index: 200;
 
   margin: var(--clipboard-margin);
-  height: 100%;
-  width: 45px;
 
   border: none;
   border-radius: 0;
 }
 
 .gradient-horizontal {
-  height: var(--clipboard-item-size-factor);
+  height: calc(var(--clipboard-item-size-factor) - var(--clipboard-border-width) * 2);
   width: 50px;
 
-  margin-right: var(--clipboard-border-width);
+  margin-right: calc(var(--clipboard-border-width) + 1vw);
+
+  margin-top: 3vh;
+  margin-bottom: 5vh;
 
   background: var(--primary-color);
   background: linear-gradient(
     270deg,
+    var(--primary-color) 0%,
+    var(--primary-color) 40%,
+    rgba(5, 5, 5, 0.6) 70%,
+    transparent 100%
+  );
+}
+
+.gradient-vertical{
+  width: calc(var(--clipboard-item-size-factor) - var(--clipboard-border-width) * 2);
+  height: 50px;
+
+  margin-bottom: calc(var(--clipboard-border-width) + 1vh);
+
+  margin-left: 3vh;
+  margin-right: 5vh;
+
+  background: var(--primary-color);
+  background: linear-gradient(
+    0deg,
     var(--primary-color) 0%,
     var(--primary-color) 40%,
     rgba(5, 5, 5, 0.6) 70%,
@@ -378,8 +420,7 @@ body,
 .clipboard-history-list::-webkit-scrollbar-track {
   background-color: var(--scrollbar-track-color);
   border-radius: var(--scrollbar-border-radius);
-  margin-left: var(--scrollbar-margin);
-  margin-right: var(--scrollbar-margin);
+  margin: var(--scrollbar-margin);
 }
 
 .clipboard-history-list::-webkit-scrollbar-thumb {
@@ -441,7 +482,7 @@ body,
     word-break: break-word;
     overflow-wrap: break-word;
 
-    overflow: hidden;
+    overflow: hidden !important;
   }
 
   order: 1;
@@ -463,11 +504,14 @@ body,
 
   background-color: transparent;
 
+  position: absolute;
+  top: 2.5%;
+  left: 2.5%;
+
   width: 95%;
   height: 95%;
 
-  overflow: hidden;
-  scroll-snap-type: x mandatory;
+  overflow: clip;
 
   p {
     margin: 0;
@@ -503,8 +547,10 @@ pre {
 }
 
 .clipboard-history-item-vertical {
-  height: var(--clipboard-item-size-factor);
+  width: var(--clipboard-item-size-factor);
   aspect-ratio: var(--aspect-ratio-vertical);
+  overflow-y: clip;
+  transition: height 0.45s ease;
 }
 
 .clipboard-history-item:hover {

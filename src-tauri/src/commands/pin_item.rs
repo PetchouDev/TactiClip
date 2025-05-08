@@ -1,8 +1,4 @@
-use crate::core::database_api::{
-    pin_item_by_id, 
-    unpin_all_items, 
-    unpin_item_by_id
-};
+use crate::core::database_api::{pin_item_by_id, unpin_all_items, unpin_item_by_id};
 
 #[tauri::command]
 pub fn toggle_pin(id: i64, state: bool) -> bool {

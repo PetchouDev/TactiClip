@@ -1,30 +1,22 @@
+use clipboard_rs::{Clipboard, ClipboardContext};
 use enigo::{
     Direction::{Click, Press, Release},
     Enigo, Key, Keyboard, Settings,
 };
-use clipboard_rs::{Clipboard, ClipboardContext};
 use tauri::{Listener, Manager};
 
 use crate::{
+    commands::toggle_window::toggle_window,
     core::{
-        app_handle::app_handle, database_api::{
-            delete_item_by_id, 
-            get_all_ids, get_item_by_id, get_truncated_item_by_id
-        }, 
-        tasks::clipboard_watcher::{
-            LAST_IMAGE, 
-            LAST_TEXT
-        }
-    }, 
+        app_handle::app_handle,
+        database_api::{delete_item_by_id, get_all_ids, get_item_by_id, get_truncated_item_by_id},
+        tasks::clipboard_watcher::{LAST_IMAGE, LAST_TEXT},
+    },
     structures::{
-        clipboard_entry::ClipboardEntry, 
-        config::{
-            config, 
-            AppConfig
-        }
-    }
+        clipboard_entry::ClipboardEntry,
+        config::{config, AppConfig},
+    },
 };
-
 
 #[tauri::command]
 pub fn get_clipboard_entries_ids() -> Vec<i64> {
@@ -68,28 +60,29 @@ pub fn push_to_clipboard(id: i64) {
         if let Ok(json) = serde_json::from_str::<serde_json::Value>(&entry.content) {
             let rtf = json["rtf"].as_str().unwrap_or_default().to_string();
             let plain = json["plain"].as_str().unwrap_or_default().to_string();
-            
-            // On windows 
+
+            // On windows
             #[cfg(target_os = "windows")]
             {
                 // Open the clipboard
                 let clip = ClipboardContext::new().expect("Failed to open clipboard");
-                
+
                 // Send the plain text
-                clip.set_text(plain).expect("Failed to write plain text to clipboard");
+                clip.set_text(plain)
+                    .expect("Failed to write plain text to clipboard");
 
                 // Send the RTF data
-                clip.set_rich_text(rtf).expect("Failed to write RTF to clipboard");
+                clip.set_rich_text(rtf)
+                    .expect("Failed to write RTF to clipboard");
 
                 println!("RTF data written to clipboard.");
-
             }
 
             // On macOS and Linux, write the RTF to the clipboard
             #[cfg(not(target_os = "windows"))]
             {
                 let _ = clipboard.write_rtf(rtf);
-            }            
+            }
         } else {
             // If the RTF extraction fails, write it as text
             let _ = clipboard.write_text(entry.content);
@@ -105,18 +98,36 @@ pub fn push_to_clipboard(id: i64) {
         println!("Deleted entry with ID: {}", id);
     }
 
-    // Give the focus back to the application
-    //release_focus();
-
-    // Start a task in background that waits for the signal the app
-    // hidden and then paste the content
+    // If auto closing is enabled, close the window after a 700ms delay
     tauri::async_runtime::spawn(async move {
-        // Wait for the signal
-        let app = app_handle();
-        let _ = app.once("paste", handler);
+        if configuration.auto_hide_on_copy {
+            // Compute the delay and sleep
+            let delay = std::time::Duration::from_millis(700);
+            tokio::time::sleep(delay).await;
+
+            // Hide the window
+            tauri::async_runtime::spawn(toggle_window(Some(false)));
+
+            // If auto pasting is enabled, trigger the paste action once the clipboard is set and the window is hidden
+            if configuration.auto_paste_on_copy {
+                tauri::async_runtime::spawn(async move {
+                    // Wait for the signal
+                    let app = app_handle();
+                    let _ = app.once("paste", handler);
+                });
+            }
+        }
     });
 
-    // If the configuration is set to show the window after a delay, show it
+    // If auto pasting is enabled, trigger the paste action once the clipboard is set and the window is hidden
+    if configuration.auto_paste_on_copy {
+        tauri::async_runtime::spawn(async move {
+            // Wait for the signal
+            let app = app_handle();
+            let _ = app.once("paste", handler);
+        });
+    }
+
     return;
 }
 

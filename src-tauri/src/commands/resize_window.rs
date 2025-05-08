@@ -1,14 +1,11 @@
 use tauri::Manager;
 
 use crate::{
-    core::app_handle::app_handle, 
-    structures::config::{
-        config,
-        AppConfig
-    },
-    commands::toggle_window::slide_window
+    core::app_handle::app_handle,
+    structures::config::{config, AppConfig},
 };
 
+use super::toggle_window::toggle_window;
 
 #[tauri::command]
 pub fn resize_window() {
@@ -18,6 +15,10 @@ pub fn resize_window() {
     if let Ok(Some(monitor)) = app_handle.primary_monitor() {
         let size = monitor.size();
         let window = app_handle.get_webview_window("main").unwrap();
+
+        // Hide the window before resizing
+        let _ = window.hide().unwrap();
+
         let _ = window.set_skip_taskbar(true).unwrap();
         let _ = window.set_visible_on_all_workspaces(true).unwrap();
 
@@ -41,10 +42,8 @@ pub fn resize_window() {
                 configuration.window_padding_y
             };
 
-            let _ = window.set_position(tauri::Position::Physical(tauri::PhysicalPosition {
-                x,
-                y,
-            }));
+            let _ =
+                window.set_position(tauri::Position::Physical(tauri::PhysicalPosition { x, y }));
         } else {
             let height = ((size.height as i32 - configuration.window_padding_y.abs() * 2) as f64
                 * configuration.window_primary_factor) as u32;
@@ -65,14 +64,14 @@ pub fn resize_window() {
                     - configuration.window_padding_x
             };
 
-            let _ = window.set_position(tauri::Position::Physical(tauri::PhysicalPosition {
-                x,
-                y,
-            }));
+            let _ =
+                window.set_position(tauri::Position::Physical(tauri::PhysicalPosition { x, y }));
         }
 
         tauri::async_runtime::spawn(async move {
-            slide_window(false).await;
+            //window.show().unwrap();
+            toggle_window(Some(false)).await;
+            window.show().unwrap();
         });
     } else {
         eprintln!("Unable to get primary monitor");

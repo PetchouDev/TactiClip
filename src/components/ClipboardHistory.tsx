@@ -11,6 +11,7 @@ type ClipboardEntry = {
   content: string;
   added_at: string;
   pinned: boolean;
+  forced_language: string;
 };
 
 export default component$(() => {
@@ -24,6 +25,7 @@ export default component$(() => {
   const positon = useSignal("top")
 
   // Setup the window logic and callbacks once the ClipboardHistory component is mounted
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
 
     // Get the ids of the clipboard entries from the backend
@@ -37,7 +39,7 @@ export default component$(() => {
     const POSITION: string          = await invoke("get_config_value", { property: "window_position" });
  
     // Parse the scroll factor to a number
-    let scroll_factor_float = parseFloat(SCROLL_FACTOR_STR);
+    const scroll_factor_float = parseFloat(SCROLL_FACTOR_STR);
     const SCROLL_FACTOR = (!isNaN(scroll_factor_float) && scroll_factor_float > 0) ? scroll_factor_float : 1.0; // I know this is ugly, but otherwise I had a scope issue with a if/else statement
 
     // Parse the smooth scroll to a boolean
@@ -50,12 +52,6 @@ export default component$(() => {
     // Set the position to the signal
     positon.value = POSITION;
 
-    console.log("Position:", POSITION);
-    console.log("Layout:", LAYOUT);
-    console.log("Scroll factor:", SCROLL_FACTOR);
-    console.log("Smooth scroll:", SMOOTH_SCROLL);
-    
-
     // Load the clipboard entries one by one and update the progress
     for (let i = 0; i < total; i++) {
       const entry = await invoke('get_clipboard_entry', { id: ids[i] });
@@ -64,10 +60,11 @@ export default component$(() => {
     }
 
     // Resize the window and place it when loading is complete and trigger the sliding animation
-    setTimeout(() => {
+    setTimeout(async () => {
       loading.value = false;
       invoke("resize_window", {});
-    }, 500);
+    }
+    , 1000);
 
     // Set a listener to receive new clipboard items from the backend
     listen<ClipboardEntry>("new-clipboard-item", (event) => {
@@ -106,9 +103,6 @@ export default component$(() => {
       // Print the list of ids
       console.log("Clipboard IDs:", clipboardData.value.map((item) => item.id));
       if (item_to_delete) {
-        console.log("Removing class");
-        //item_to_delete.itemRef.value?.classList?.remove("shrink-out");
-        console.log("Removing item from clipboard data");
 
         let data = [...clipboardData.value];
         data = data.filter((item) => item.id !== item_to_delete.id);
@@ -134,26 +128,38 @@ export default component$(() => {
       }, 400);
     });
     
-    // Set the horizontal srolling to the clipboard history list
-    if (LAYOUT === "horizontal") {
-      addEventListener(
-          'wheel',
-          (e: WheelEvent) => {
-            console.log("Scrolling", e.deltaY);
-            if (e.deltaY !== 0) {
-              e.preventDefault();
+    addEventListener(
+      'wheel',
+      (e: WheelEvent) => {
+        if (!listRef.value) return;
+    
+        const dx = e.deltaX;
+        const dy = e.deltaY;
 
-              // If the scroll should be horizontal, scroll horizontally
-                listRef.value?.scrollBy({
-                  left: e.deltaY * SCROLL_FACTOR,
-                  behavior: SMOOTH_SCROLL ? 'smooth' : 'auto'
-                });
-              
-            }
-          },
-          { passive: false }
-      );
-    }
+        let direction = 0;
+        // Get the main direction
+        if (layout.value === "horizontal" && dx !== 0) {
+          direction = dx / Math.abs(dx);
+        }
+
+        if (dx === 0 && dy !== 0) { {
+          direction = dy / Math.abs(dy);
+        }
+    
+        // Compute the vector norm (magnitude of the scroll input)
+        const norm = Math.sqrt(dx * dx + dy * dy);
+        if (norm === 0) return;
+    
+        e.preventDefault();
+    
+        const from = LAYOUT === "horizontal" ? 'left' : 'top';
+    
+        listRef.value.scrollBy({
+          [from]: direction * norm * SCROLL_FACTOR,
+          behavior: SMOOTH_SCROLL ? 'smooth' : 'auto',
+        });
+      }}
+    , { passive: false });
   });
 
   return (
@@ -165,7 +171,7 @@ export default component$(() => {
             <circle class="progress-ring-bg" stroke="#e6e6e6" stroke-width="10" fill="transparent" r="50" cx="60" cy="60" />
             <circle
               class="progress-ring-fill"
-              stroke="#4f46e5"
+              stroke="#f5ca5b"
               stroke-width="10"
               fill="transparent"
               r="50"
@@ -189,8 +195,8 @@ export default component$(() => {
         <div class={"clipboard-history-container clipboard-history-container-" + layout.value + " scroll-" + positon.value}>
           <ActionRow layout={layout.value}/>
           <ul class={"clipboard-history-list clipboard-history-list-"+ layout.value} ref={listRef}>
-            {clipboardData.value.map((entry, index) => (
-              <ClipboardItem orientation={layout.value} entry={entry} />
+            {clipboardData.value.map((entry) => (
+              <ClipboardItem orientation={layout.value} entry={entry} key={entry.id}/>
             ))}
           <li class="dummy-item">
             <div class="dummy-item"></div>

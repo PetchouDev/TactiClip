@@ -10,9 +10,9 @@ where
 {
     #[cfg(target_os = "windows")]
     {
+        use device_query::DeviceState;
         use device_query::Keycode;
         use tokio::time::{sleep, Duration};
-        use device_query::DeviceState;
 
         tauri::async_runtime::spawn(async move {
             let device_state = DeviceState::new();

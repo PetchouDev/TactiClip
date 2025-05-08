@@ -1,4 +1,4 @@
-import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -8,6 +8,7 @@ export default component$(() => {
   const progress = useSignal(0);
 
   // Set a listener for the progress update event
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     listen("progress-update", (event) => {
       const { payload } = event;

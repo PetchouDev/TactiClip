@@ -20,8 +20,8 @@
         "shadow": false,
         "alwaysOnTop": true,
         "title": "TactiClip",
-        "width": 400,
-        "height": 140,
+        "width": 450,
+        "height": 160,
         "center": true
       }
     ],

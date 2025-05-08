@@ -10,7 +10,6 @@ use tokio::time::sleep;
 use crate::core::database_api::{get_last_item_copied, insert_clipboard_entry};
 use crate::structures::clipboard_entry::ClipboardEntry;
 
-
 pub static LAST_TEXT: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::new())); // Clipboard watcher control
 pub static LAST_IMAGE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::new())); // Clipboard watcher control
 pub static PUSHED_COPY: AtomicBool = AtomicBool::new(false); // Flag to indicate if the clipboard was pushed
@@ -21,10 +20,16 @@ pub async fn watch_clipboard(app: AppHandle, conn_mutex: &Mutex<Connection>) {
 
     // Initialisation des derniers éléments copiés
     if let Some(last_image_entry) = get_last_item_copied("image") {
-        LAST_IMAGE.lock().unwrap().clone_from(&last_image_entry.content);
+        LAST_IMAGE
+            .lock()
+            .unwrap()
+            .clone_from(&last_image_entry.content);
     }
     if let Some(last_text_entry) = get_last_item_copied("text") {
-        LAST_TEXT.lock().unwrap().clone_from(&last_text_entry.content);
+        LAST_TEXT
+            .lock()
+            .unwrap()
+            .clone_from(&last_text_entry.content);
     }
 
     loop {
@@ -39,7 +44,6 @@ pub async fn watch_clipboard(app: AppHandle, conn_mutex: &Mutex<Connection>) {
             if new_text != *LAST_TEXT.lock().unwrap() {
                 let format = "text";
                 let stored_content = new_text.clone();
-                
 
                 // RICH TEXT support (Too experimental for now, only work an application to itself - Word to Word and
                 // I can get the fallback to plain text to work)
@@ -53,11 +57,11 @@ pub async fn watch_clipboard(app: AppHandle, conn_mutex: &Mutex<Connection>) {
                         stored_content = combined.to_string();
                         format = "rich_text";
                     }
-                } */ 
-        
+                } */
+
                 *LAST_TEXT.lock().unwrap() = new_text.clone();
                 let id = insert_clipboard_entry(format, &stored_content, 0);
-        
+
                 let conn = conn_mutex.lock().unwrap();
                 if let Ok(row) = conn.query_row(
                     "SELECT id, type, content, added_at, pinned FROM clipboard_entries WHERE id = ?1",

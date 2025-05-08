@@ -1,20 +1,10 @@
-use tauri::{
-    Listener, 
-    Manager, 
-    Result, 
-    WebviewWindowBuilder
-};
+use tauri::{Listener, Manager, Result, WebviewWindowBuilder};
 
 use crate::{
-    core::app_handle::app_handle, 
-    structures::config::{
-        config, 
-        get_config_path, 
-        AppConfig
-    },
-    commands::toggle_window::slide_window
+    commands::toggle_window::toggle_window,
+    core::app_handle::app_handle,
+    structures::config::{config, get_config_path, AppConfig},
 };
-
 
 fn reload_main() {
     // Get the app handle
@@ -28,10 +18,10 @@ fn reload_main() {
 
     // Listen for the end of the sliding animation to trigger it back so th window becomes visible again
     app.once("paste", move |_| {
-        tauri::async_runtime::spawn(slide_window(true));
+        tauri::async_runtime::spawn(toggle_window(Some(true)));
     });
 }
-  
+
 #[tauri::command]
 pub async fn open_settings() {
     println!("Opening settings window");
@@ -50,7 +40,7 @@ pub async fn open_settings() {
             "settings",
             tauri::WebviewUrl::App("/settings".parse().unwrap()),
         )
-        .inner_size(600.0, 700.0)
+        .inner_size(650.0, 700.0)
         .center()
         .resizable(false)
         .maximizable(false)
@@ -59,7 +49,11 @@ pub async fn open_settings() {
 
         let _ = win.show();
         let _ = win.set_focus();
-    }).await.unwrap();
+    })
+    .await
+    .unwrap();
+
+    let _ = toggle_window(Some(false)).await;
 }
 
 #[tauri::command]
@@ -88,7 +82,6 @@ pub fn get_config_value(property: Option<&str>) -> Option<String> {
 // Reset the config to default values
 #[tauri::command]
 pub fn reset_config() -> Result<()> {
-
     // Get the default config as a JSON string
     let default = AppConfig::default();
     let default_json = serde_json::to_string(&default).unwrap();
@@ -101,6 +94,11 @@ pub fn reset_config() -> Result<()> {
 
     // Reload the main window
     reload_main();
+
+    // Reload the settings window
+    if let Some(window) = app_handle().get_window("settings") {
+        window.webviews()[0].reload()?;
+    }
 
     Ok(())
 }
@@ -125,18 +123,22 @@ pub fn cancel_config(app: tauri::AppHandle) -> Result<()> {
     // Reload the main window
     app.get_window("main").unwrap().webviews()[0].reload()?;
 
+    // Close the settings window
+    if let Some(window) = app.get_window("settings") {
+        window.close().unwrap();
+    }
+
     Ok(())
 }
 
 #[tauri::command]
 pub fn save_config(payload: String) {
-
     // Get the current config
     let mut config = config();
 
     // Update the config with the new values
     config.update_from_json(&payload).unwrap();
-    
+
     // Write the config to the file
     let path = get_config_path();
     config.save_to_file(path.to_str().unwrap()).unwrap();

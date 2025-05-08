@@ -1,13 +1,13 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "enables the default permissions",
-  "windows": [
-    "main",
-	"settings"
-  ],
-  "permissions": [
-    "core:default",
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "default",
+	"description": "enables the default permissions",
+	"windows": [
+		"main",
+		"settings"
+	],
+	"permissions": [
+		"core:default",
 		"core:path:default",
 		"core:event:default",
 		"core:window:default",
@@ -19,6 +19,9 @@
 		"core:tray:default",
 		"clipboard:read-all",
 		"clipboard:write-all",
-		"clipboard:monitor-all"
-  ]
+		"clipboard:monitor-all",
+		"autostart:allow-enable",
+		"autostart:allow-disable",
+		"autostart:allow-is-enabled"
+	]
 }

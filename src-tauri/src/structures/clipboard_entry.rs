@@ -8,5 +8,5 @@ pub struct ClipboardEntry {
     pub content: String,
     pub added_at: String,
     pub pinned: bool,
-    pub forced_language: Option<String>
+    pub forced_language: Option<String>,
 }

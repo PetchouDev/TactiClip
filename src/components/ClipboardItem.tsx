@@ -1,4 +1,4 @@
-import { component$, QwikHTMLElements, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { invoke } from "@tauri-apps/api/core";
 
 import { IconHover } from "./Icon";
@@ -26,6 +26,7 @@ export const ClipboardItem = component$<ClipboardItemProps>(({ orientation, entr
 
 
   // Listen for the unpin-all event and unpin all items
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
 
     // Auto-highlight the text if the entry type is text
@@ -49,7 +50,7 @@ export const ClipboardItem = component$<ClipboardItemProps>(({ orientation, entr
     listen("unpin-all", async () => {
       if (itemRef.value?.classList.contains("clipboard-history-item-pinned")) {
 
-        itemRef.value?.classList.remove("expand-in");
+        itemRef.value.classList.remove("expand-in");
         itemRef.value?.classList.add("shrink-out");
           setTimeout(() => {
             itemRef.value?.classList.remove("clipboard-history-item-pinned");
@@ -92,7 +93,6 @@ export const ClipboardItem = component$<ClipboardItemProps>(({ orientation, entr
           overlay?.classList.remove("show");
           circle?.classList.remove("animate");
           check?.classList.remove("animate");
-          invoke("toggle_window", { target_visibility: false });
         }, 700);
       }}
       onMouseEnter$={() => {
