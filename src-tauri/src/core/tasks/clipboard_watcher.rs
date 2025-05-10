@@ -1,5 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
+use regex::Regex;
 use std::time::Duration;
 
 use once_cell::sync::Lazy;
@@ -13,6 +14,14 @@ use crate::structures::clipboard_entry::ClipboardEntry;
 pub static LAST_TEXT: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::new())); // Clipboard watcher control
 pub static LAST_IMAGE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::new())); // Clipboard watcher control
 pub static PUSHED_COPY: AtomicBool = AtomicBool::new(false); // Flag to indicate if the clipboard was pushed
+
+
+// Compile a regex pattern to match color formats thread-safely)
+static COLOR_REGEX: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(
+        r"(?i)^\s*(#(?:[0-9a-f]{3}|[0-9a-f]{6})\b|rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)|hsla?\(\s*\d{1,3}(?:\.\d+)?\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\))\s*$"
+    ).unwrap()
+});
 
 // Function to watch the clipboard for changes
 pub async fn watch_clipboard(app: AppHandle, conn_mutex: &Mutex<Connection>) {
@@ -42,8 +51,6 @@ pub async fn watch_clipboard(app: AppHandle, conn_mutex: &Mutex<Connection>) {
         // Lecture du texte
         if let Ok(new_text) = clipboard.read_text() {
             if new_text != *LAST_TEXT.lock().unwrap() {
-                let format = "text";
-                let stored_content = new_text.clone();
 
                 // RICH TEXT support (Too experimental for now, only work an application to itself - Word to Word and
                 // I can get the fallback to plain text to work)
@@ -59,8 +66,16 @@ pub async fn watch_clipboard(app: AppHandle, conn_mutex: &Mutex<Connection>) {
                     }
                 } */
 
+
+                // Check if the text is a color format
+                let trimmed = new_text.trim_matches(|c: char| c.is_control() || c.is_whitespace());
+                let is_color = COLOR_REGEX.is_match(trimmed);
+                let format = if is_color { "color" } else { "text" };
+
+                let clipboard_text = if is_color { trimmed.to_string() } else { new_text.clone() };
+
                 *LAST_TEXT.lock().unwrap() = new_text.clone();
-                let id = insert_clipboard_entry(format, &stored_content, 0);
+                let id = insert_clipboard_entry(format, &clipboard_text, 0);
 
                 let conn = conn_mutex.lock().unwrap();
                 if let Ok(row) = conn.query_row(

@@ -19,6 +19,37 @@ export interface ClipboardItemProps {
   };
 }
 
+function stripAlphaChannel(color: string): string {
+    // Match rgba or rgb
+    const rgbaMatch = color.match(/rgba?\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})(?:,\s*[0-9.]+)?\)/i);
+    if (rgbaMatch) {
+      const r = parseInt(rgbaMatch[1]).toString(16).padStart(2, '0');
+      const g = parseInt(rgbaMatch[2]).toString(16).padStart(2, '0');
+      const b = parseInt(rgbaMatch[3]).toString(16).padStart(2, '0');
+      return `#${r}${g}${b}`;
+    }
+  
+    // Match hsla or hsl 
+    const hslaMatch = color.match(/hsla?\((\d+(?:\.\d+)?),\s*(\d+)%?,\s*(\d+)%?(?:,\s*[0-9.]+)?\)/i);
+    if (hslaMatch) {
+      const h = parseFloat(hslaMatch[1]);
+      const s = parseFloat(hslaMatch[2]) / 100;
+      const l = parseFloat(hslaMatch[3]) / 100;
+  
+      const a = s * Math.min(l, 1 - l);
+      const f = (n: number) => {
+        const k = (n + h / 30) % 12;
+        const c = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * c).toString(16).padStart(2, '0');
+      };
+  
+      return `#${f(0)}${f(8)}${f(4)}`;
+    }
+  
+    // If no match, return the original color
+    return color;
+}
+
 export const ClipboardItem = component$<ClipboardItemProps>(({ orientation, entry }) => {
   const overlayClass = useSignal("");
   const itemRef = useSignal<HTMLElement>();
@@ -41,7 +72,7 @@ export const ClipboardItem = component$<ClipboardItemProps>(({ orientation, entr
 
         // if the relevance is greater than 10, set the isCode to true to use
         // Syntax highlighting, otherwise set it to false as this is a normal text or not enough code to highlight
-        if (hl.relevance > 3) {
+        if (hl.relevance > 5) {
           language.value = hl.language? hl.language : "raw text";
         }
       }
@@ -111,11 +142,15 @@ export const ClipboardItem = component$<ClipboardItemProps>(({ orientation, entr
           alt="Clipboard"
           class="clipboard-image"
         />
+      ) : entry.entry_type === "color" ? (
+        <div class="clipboard-item-color" style={{ backgroundColor: stripAlphaChannel(entry.content) }}>
+          <div class="clipboard-item-color-text">{entry.content}</div>
+        </div>
       ) : (
         <div class="clipboard-history-item-content">
           {language.value === "Raw text" ? (
             entry.content.split(/\r?\n/).map((line, i) => (
-              <p key={i}>{line}</p>
+              <p key={i} class="clipboard-item-content-line">{line}</p>
             ))
           ) : (
             <pre class="hljs" dangerouslySetInnerHTML={hljs.highlight(entry.content, { language: language.value }).value}></pre>
@@ -142,28 +177,30 @@ export const ClipboardItem = component$<ClipboardItemProps>(({ orientation, entr
           >
             <IconHover regular="trash-can" solid="trash-can" class="trash-button" />
           </button>
-
-          <select
-            class="overlay-button language-select"
-            bind:value={language}
-            style={{ marginLeft: '8px' }}
-            onClick$={(e) => e.stopPropagation()}
-            onChange$={async (e) => {
-              const selectedLanguage = (e.target as HTMLSelectElement).value;
-              invoke("force_language", { id: entry.id, language: selectedLanguage });
-            }}
-          >
-            <option value="Raw text">Raw text</option>
-            {hljs.listLanguages().map((lang) => (
-              <option 
-              key={lang} 
-              value={lang} 
-              selected={lang === language.value}
-              >
-                {lang.charAt(0).toUpperCase() + lang.slice(1)}
-              </option>
-            ))}
-          </select>
+          
+          { entry.entry_type === "text" && (
+            <select
+              class="overlay-button language-select"
+              bind:value={language}
+              style={{ marginLeft: '8px' }}
+              onClick$={(e) => e.stopPropagation()}
+              onChange$={async (e) => {
+                const selectedLanguage = (e.target as HTMLSelectElement).value;
+                invoke("force_language", { id: entry.id, language: selectedLanguage });
+              }}
+            >
+              <option value="Raw text">Raw text</option>
+              {hljs.listLanguages().map((lang) => (
+                <option 
+                key={lang} 
+                value={lang} 
+                selected={lang === language.value}
+                >
+                  {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
         <div class="row-wrapper lower-wrapper">

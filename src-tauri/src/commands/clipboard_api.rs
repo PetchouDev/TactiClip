@@ -119,15 +119,6 @@ pub fn push_to_clipboard(id: i64) {
         }
     });
 
-    // If auto pasting is enabled, trigger the paste action once the clipboard is set and the window is hidden
-    if configuration.auto_paste_on_copy {
-        tauri::async_runtime::spawn(async move {
-            // Wait for the signal
-            let app = app_handle();
-            let _ = app.once("paste", handler);
-        });
-    }
-
     return;
 }
 
