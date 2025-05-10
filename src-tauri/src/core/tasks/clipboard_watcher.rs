@@ -23,6 +23,17 @@ static COLOR_REGEX: Lazy<Regex> = Lazy::new(|| {
     ).unwrap()
 });
 
+// Compile regex patterns to match email
+static MAIL_REGEX: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"(?i)^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9.-]+\.[a-z]{2,}$").unwrap()
+});
+
+// Compile regex patterns to match URL
+static URL_REGEX: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"(?i)^[a-z][a-z0-9+\-.]*://[^\s]+$").unwrap()
+});
+
+
 // Function to watch the clipboard for changes
 pub async fn watch_clipboard(app: AppHandle, conn_mutex: &Mutex<Connection>) {
     let clipboard = app.state::<tauri_plugin_clipboard::Clipboard>();
@@ -70,9 +81,19 @@ pub async fn watch_clipboard(app: AppHandle, conn_mutex: &Mutex<Connection>) {
                 // Check if the text is a color format
                 let trimmed = new_text.trim_matches(|c: char| c.is_control() || c.is_whitespace());
                 let is_color = COLOR_REGEX.is_match(trimmed);
-                let format = if is_color { "color" } else { "text" };
+                let is_email = MAIL_REGEX.is_match(trimmed);
+                let is_url = URL_REGEX.is_match(trimmed);
+                let format = if is_color {
+                    "color"
+                } else if is_email {
+                    "email"
+                } else if is_url {
+                    "url"
+                } else {
+                    "text"
+                };
 
-                let clipboard_text = if is_color { trimmed.to_string() } else { new_text.clone() };
+                let clipboard_text = if format == "text" {new_text.clone()} else { trimmed.to_string() };
 
                 *LAST_TEXT.lock().unwrap() = new_text.clone();
                 let id = insert_clipboard_entry(format, &clipboard_text, 0);

@@ -45,3 +45,6 @@ lerna-debug.log*
 # Tauri
 src-tauri/target/
 src-tauri/gen/schemas
+
+# Setup script with personal config
+setup_builder_script.iss

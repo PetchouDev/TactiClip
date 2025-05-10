@@ -58,6 +58,9 @@
   --scrollbar-margin: 200px;
 
   --button-border-radius: 5px;
+
+  --email-accent-color: #3B82F6;
+  --url-accent-color: #10B981;
 }
 
 html,
@@ -860,9 +863,36 @@ pre {
   transition: all 0.3s ease;
 }
 
+.lower-row-buttons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  padding: 5px;
+
+  .overlay-button {
+    margin: 0;
+    margin-left: 5px;
+  }
+}
+
 .trash-button:hover {
   background-color: var(--text-color);
   color: red;
+
+  transition: all 0.3s ease;
+}
+
+.email-button:hover {
+  background-color: var(--text-color);
+  color: var(--email-accent-color);
+
+  transition: all 0.3s ease;
+}
+
+.url-button:hover {
+  background-color: var(--text-color);
+  color: var(--url-accent-color);
 
   transition: all 0.3s ease;
 }

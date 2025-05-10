@@ -18,7 +18,10 @@ mod structures;
 /* |___|_|  |_|_|    \___/|_| \_\|_| |____/  */
 
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{
+        Menu, 
+        MenuItem
+    },
     tray::TrayIconBuilder,
     Manager,
 };
@@ -36,6 +39,7 @@ use commands::{
     },
     show_window::show_window,
     toggle_window::{slide_window, toggle_window},
+    url_opener::open_url
 };
 use core::{
     app_handle::{app_handle as get_app_handle, APP_HANDLE},
@@ -160,6 +164,7 @@ fn main() {
             save_config,
             preview_config,
             cancel_config,
+            open_url,
             #[cfg(windows)]
             disable_windows_clipboard_history,
             #[cfg(windows)]

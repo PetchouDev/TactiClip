@@ -7,3 +7,4 @@ pub mod resize_window;
 pub mod settings_api;
 pub mod show_window;
 pub mod toggle_window;
+pub mod url_opener;

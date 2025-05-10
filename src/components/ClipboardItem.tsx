@@ -152,9 +152,11 @@ export const ClipboardItem = component$<ClipboardItemProps>(({ orientation, entr
             entry.content.split(/\r?\n/).map((line, i) => (
               <p key={i} class="clipboard-item-content-line">{line}</p>
             ))
-          ) : (
+          ) : entry.entry_type === "text" ? (
             <pre class="hljs" dangerouslySetInnerHTML={hljs.highlight(entry.content, { language: language.value }).value}></pre>
-          )}          
+          ) : 
+            <p class="email-or-link">{entry.content}</p>
+          }          
         </div>
       )}
 
@@ -206,28 +208,52 @@ export const ClipboardItem = component$<ClipboardItemProps>(({ orientation, entr
         <div class="row-wrapper lower-wrapper">
           <div class="lower-row">
             <div class="date">{entry.added_at}</div>
-            <button
-              onClick$={async (e) => {
-                e.stopPropagation();
-                const res = await invoke("toggle_pin", { id: entry.id, state: !entry.pinned });
-                itemRef.value?.classList.remove("expand-in");
-                itemRef.value?.classList.add("shrink-out");
-                if (res) {
-                  setTimeout(() => {
-                    itemRef.value?.classList.toggle("clipboard-history-item-pinned");
-                    itemRef.value?.classList.remove("shrink-out");
-                    itemRef.value?.classList.add("expand-in");
-                  }, 350);
-                } else {
-                  alert("Error pinning item");
-                  itemRef.value?.classList.remove("shrink-out");
-                  itemRef.value?.classList.add("expand-in");
+              <div class="lower-row-buttons">
+                { entry.entry_type === "url" &&
+                  <button
+                    onClick$={async (e) => {
+                      e.stopPropagation();
+                      await invoke("open_url", { url: entry.content });
+                    }}
+                    class="overlay-button url-button"
+                  >
+                    <IconHover regular="share-from-square" solid="share-from-square" class="url-button" />
+                  </button>
                 }
-              }}
-              class="overlay-button star-button"
-            >
-              <IconHover regular="star" solid="star" class={"star-button" + (entry.pinned ? " pinned" : "")} />
-            </button>
+                { entry.entry_type === "email" &&
+                  <button
+                    onClick$={async (e) => {
+                      e.stopPropagation();
+                      await invoke("open_url", { url: "mailto://"  + entry.content });
+                    }}
+                    class="overlay-button email-button"
+                  >
+                    <IconHover regular="envelope" solid="envelope" class="email-button" />
+                  </button>
+                }
+                <button
+                  onClick$={async (e) => {
+                    e.stopPropagation();
+                    const res = await invoke("toggle_pin", { id: entry.id, state: !entry.pinned });
+                    itemRef.value?.classList.remove("expand-in");
+                    itemRef.value?.classList.add("shrink-out");
+                    if (res) {
+                      setTimeout(() => {
+                        itemRef.value?.classList.toggle("clipboard-history-item-pinned");
+                        itemRef.value?.classList.remove("shrink-out");
+                        itemRef.value?.classList.add("expand-in");
+                      }, 350);
+                    } else {
+                      alert("Error pinning item");
+                      itemRef.value?.classList.remove("shrink-out");
+                      itemRef.value?.classList.add("expand-in");
+                    }
+                  }}
+                  class="overlay-button star-button"
+                >
+                  <IconHover regular="star" solid="star" class={"star-button" + (entry.pinned ? " pinned" : "")} />
+                </button>
+              </div>
           </div>
         </div>
       </div>
