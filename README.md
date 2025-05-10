@@ -21,6 +21,9 @@ Easily browse, search, and organize your clipboard history with a snappy native-
 - **Easy to manage**  
   Easy configuration and management of clipboard history.
 
+- **Leveled-Up productivity**  
+  Quick actions and for some special clipboard entries (links, emails, colors, etc.).
+
 - **Cross-Platform**  
   Runs on Windows, macOS, and Linux via Tauri V2’s native shell.
 
@@ -34,9 +37,6 @@ Easily browse, search, and organize your clipboard history with a snappy native-
 
 - **Customizable UI**
   Extension of the customizable UI with custom CSS variables (and custom CSS injection ?).
-
-- **Leveled-Up productivity**  
-  Quick actions and for some special clipboard entries (links, emails, colors, etc.).
 
 - **File support**  
   Keep a track of files copied to the clipboard (images, videos, etc.).

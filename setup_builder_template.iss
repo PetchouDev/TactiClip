@@ -10,7 +10,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={E8B70D32-D1A0-444A-AD6C-6AA3AC88967C}
+AppId={{E8B70D32-D1A0-444A-AD6C-6AA3AC88967C}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -32,7 +32,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "startup"; Description: "Start {#MyAppName} with Windows"; GroupDescription: "Startup options"; Flags: checked
+Name: "startup"; Description: "Start {#MyAppName} with Windows"; GroupDescription: "Startup options";
 
 [Files]
 Source: "{#BaseDir}\src-tauri\target\release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
