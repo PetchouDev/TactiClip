@@ -21,7 +21,7 @@ LicenseFile={#BaseDir}\LICENSE
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 OutputDir={#BaseDir}\src-tauri\target\release
-OutputBaseFilename=TactiClip-Setup
+OutputBaseFilename=TactiClip-{#MyAppVersion}-Setup
 SetupIconFile={#BaseDir}\src-tauri\icons\icon.ico
 Compression=lzma
 SolidCompression=yes
